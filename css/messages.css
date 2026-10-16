@@ -1,0 +1,160 @@
+/* messages.css */
+.messages-container {
+  padding-top: 24px;
+  padding-bottom: 40px;
+  max-width: 600px; /* Keeps it readable on desktop, perfect on mobile */
+}
+
+.state-card {
+  text-align: center;
+  padding: 40px 20px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.state-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.state-card h3 {
+  color: var(--burgundy);
+  margin-bottom: 8px;
+}
+
+.state-card p {
+  color: var(--muted);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.message-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  box-shadow: var(--shadow-md);
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message-content {
+  font-size: 1.1rem;
+  line-height: 1.65;
+  color: var(--ink);
+  margin-bottom: 16px;
+  white-space: pre-wrap; /* Preserves line breaks */
+}
+
+.message-date {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reactions-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--border);
+  background: var(--beige-soft);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.reaction-btn:hover:not(:disabled) {
+  border-color: var(--gold);
+  background: rgba(201, 162, 75, 0.1);
+  transform: translateY(-1px);
+}
+
+.reaction-btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* Active reaction states */
+/* Active reaction states */
+.reaction-btn.active-love {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.reaction-btn.active-laugh {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: #eab308;
+  color: #a16207;
+}
+
+.reaction-btn.active-clap {
+  background: rgba(110, 30, 43, 0.1);
+  border-color: var(--burgundy);
+  color: var(--burgundy);
+}
+
+.load-more-container {
+  text-align: center;
+  margin-top: 32px;
+  display: block;
+}
+
+.load-more-container .btn {
+  min-width: 200px;
+}
+
+@media (max-width: 480px) {
+  .message-card {
+    padding: 20px 16px;
+  }
+  .message-content {
+    font-size: 1.05rem;
+  }
+  .reaction-btn {
+    padding: 10px 12px; /* Larger touch target for mobile */
+    font-size: 0.95rem;
+  }
+}

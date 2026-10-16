@@ -23,8 +23,8 @@ function normalizeCode(code) {
 }
 
 async function supabaseFetch(path, options = {}) {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://myazzpalbiedwceqogjz.supabase.co";
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXp6cGFsYmllZHdjZXFvZ2p6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjEzMzM4NCwiZXhwIjoyMTA3NzA5Mzg0fQ.-p5RRzDhoEdXh-yK_B308PtN6-XdCYE4nLT2b5RP9AU";
   const url = `${SUPABASE_URL}/rest/v1/${path}`;
 
   const headers = {

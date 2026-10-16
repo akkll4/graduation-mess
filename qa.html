@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Batch Q&A - Before We Graduate</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/gate.css" />
+  <link rel="stylesheet" href="css/qa.css" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-badge">🩺</span>
+        <span>Before We Graduate</span>
+      </a>
+      <nav class="nav" id="siteNav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="send.html">Send Message</a>
+        <a href="messages.html">Messages</a>
+        <a href="qa.html" class="active">Q&A</a>
+        <a href="votes.html">Votes</a>
+        <a href="match.html">Classmate Match</a>
+      </nav>
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+    </div>
+  </header>
+
+  <main id="main" class="container qa-container">
+    
+    <!-- Page Header -->
+    <section class="qa-header">
+      <div class="qa-header-pill">💬 Batch Q&A</div>
+      <h1>Share your memories, <span class="gold-text">one question at a time.</span></h1>
+      <p class="qa-header-sub">
+        Answer the questions below and read what your classmates shared. 
+        All replies are completely anonymous.
+      </p>
+    </section>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="state-card">
+      <div class="spinner"></div>
+      <p>Loading questions...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="state-card" hidden>
+      <div class="state-icon">📭</div>
+      <h3>No questions yet</h3>
+      <p>Check back soon!</p>
+    </div>
+
+    <!-- Questions List -->
+    <div id="questionsList" class="questions-list" hidden></div>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>Made with caffeine, stress, and graduation dreams.</span>
+      <span class="footer-dot">•</span>
+      <span>Class memory project</span>
+    </div>
+  </footer>
+
+
+  <!-- Replies Modal -->
+  <div id="repliesModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalQuestionText"></h3>
+        <button type="button" class="modal-close-btn" id="closeModalBtn" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="modalRepliesList">
+        <!-- Replies will be injected here -->
+      </div>
+    </div>
+  </div>
+
+  <div id="gate-root"></div>
+  <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/gate.js"></script>
+  <script src="js/qa.js"></script>
+</body>
+</html>

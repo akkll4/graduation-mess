@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Before We Graduate</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+</head>
+<body>
+
+  <!-- Login Screen -->
+  <div id="loginScreen" class="admin-login">
+    <div class="login-card">
+      <div class="login-badge">🔐 Admin Access</div>
+      <h2>Admin Login</h2>
+      <p>Enter your admin credentials</p>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" required />
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required />
+        </div>
+
+        <button type="submit" class="btn btn-gold">Login</button>
+        <div id="loginError" class="login-error" hidden></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="adminDashboard" class="admin-dashboard" hidden>
+    
+    <!-- Top Bar -->
+    <header class="admin-topbar">
+      <div class="container admin-topbar-inner">
+        <div class="admin-brand">
+          <span class="brand-badge">🩺</span>
+          <span>Admin Dashboard</span>
+        </div>
+        <button id="logoutBtn" class="btn btn-outline">Logout</button>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- Level 1: Group Tabs -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-group="malaysian">Malaysian Group</button>
+        <button class="admin-tab" data-group="arab">Arab Group</button>
+      </div>
+
+      <!-- Compact Stats Row -->
+      <div class="stats-row">
+        <div class="stat-item">
+          <span class="stat-label">Total Codes</span>
+          <span class="stat-value" id="totalCodes">-</span>
+        </div>
+        <div class="stat-item active-stat">
+          <span class="stat-label">Active</span>
+          <span class="stat-value" id="activeCodes">-</span>
+        </div>
+        <div class="stat-item pending-stat">
+          <span class="stat-label">Remaining</span>
+          <span class="stat-value" id="remainingCodes">-</span>
+        </div>
+      </div>
+
+      <!-- Level 2: Section Tabs -->
+      <div class="section-tabs">
+        <button class="section-tab active" data-section="messages">💌 Messages</button>
+        <button class="section-tab" data-section="qa">💬 Q&A Answers</button>
+        <button class="section-tab" data-section="votes">🏆 Votes</button>
+        <button class="section-tab" data-section="match">🩺 Tributes</button>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="container admin-main">
+      
+      <!-- Messages Section -->
+      <section id="messagesSection" class="admin-section-content">
+        <div class="section-header">
+          <h3 class="section-title">Manage Messages</h3>
+          <div class="message-filters">
+            <button class="filter-btn active" data-status="pending">Pending</button>
+            <button class="filter-btn" data-status="approved">Approved</button>
+            <button class="filter-btn" data-status="rejected">Rejected</button>
+          </div>
+        </div>
+        <div id="messagesList" class="messages-list">
+          <div class="loading">Loading messages...</div>
+        </div>
+      </section>
+
+      <!-- Q&A Section -->
+      <section id="qaSection" class="admin-section-content" hidden>
+        <div class="section-header">
+          <h3 class="section-title">Manage Q&A Answers</h3>
+          <div class="message-filters">
+            <button class="filter-btn active" data-qa-status="pending">Pending</button>
+            <button class="filter-btn" data-qa-status="approved">Approved</button>
+            <button class="filter-btn" data-qa-status="rejected">Rejected</button>
+          </div>
+        </div>
+        <div id="qaAnswersList" class="messages-list">
+          <div class="loading">Loading Q&A answers...</div>
+        </div>
+      </section>
+
+      <!-- Votes Section -->
+      <section id="votesSection" class="admin-section-content" hidden>
+        <div class="section-header">
+          <h3 class="section-title">🏆 Voting Results</h3>
+          <div class="message-filters">
+            <button class="filter-btn active" data-vote-view="summary">Summary (Top 3)</button>
+            <button class="filter-btn" data-vote-view="details">Detailed Log</button>
+          </div>
+        </div>
+        
+        <div id="votesLoading" class="loading">Loading voting results...</div>
+        <div id="votesEmpty" class="empty-state" hidden>No votes have been cast yet for this group.</div>
+        
+        <div id="votesResultsList" class="votes-results-list" hidden></div>
+      </section>
+
+      <!-- Match Section -->
+      <!-- Tributes Section -->
+      <section id="matchSection" class="admin-section-content" hidden>
+        <div class="section-header">
+          <h3 class="section-title">🩺 Classmate Tributes</h3>
+          <div class="message-filters">
+            <button class="filter-btn active" data-tribute-status="pending">Pending</button>
+            <button class="filter-btn" data-tribute-status="approved">Approved</button>
+            <button class="filter-btn" data-tribute-status="rejected">Rejected</button>
+          </div>
+        </div>
+
+        <!-- Recipient Filter -->
+        <div class="tribute-filter-row">
+          <label for="recipientFilter">Filter by recipient:</label>
+          <select id="recipientFilter" class="tribute-filter-select">
+            <option value="all">All classmates</option>
+          </select>
+          <div class="tribute-stats" id="tributeStats"></div>
+        </div>
+
+        <div id="tributesLoading" class="loading">Loading tributes...</div>
+        <div id="tributesEmpty" class="empty-state" hidden>No tributes found for this filter.</div>
+        <div id="tributesList" class="tributes-list" hidden></div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

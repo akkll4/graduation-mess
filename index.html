@@ -6,6 +6,7 @@
   <title>Before We Graduate</title>
   <meta name="description" content="A graduation memory space for our batch." />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/gate.css" />
 </head>
 <body>
 
@@ -21,14 +22,14 @@
     <div class="container topbar-inner">
 
       <a href="index.html" class="brand">
-        <span class="brand-badge">🩺</span>
-        <span>Before We Graduate</span>
+        <span>CHTMP-5-Graduation</span>
       </a>
 
       <nav class="nav" id="siteNav" aria-label="Main navigation">
         <a href="index.html" class="active">Home</a>
         <a href="send.html">Send Message</a>
         <a href="messages.html">Messages</a>
+        <a href="qa.html">Questions</a>
         <a href="votes.html">Votes</a>
         <a href="match.html">Classmate Match</a>
       </nav>
@@ -52,7 +53,7 @@
 
       <h1>
         We survived lectures, rounds, and
-        <span class="gold-text">8 AM exams</span>.
+        <span class="gold-text">9 AM exams</span>.
       </h1>
 
       <p class="hero-sub">
@@ -102,6 +103,15 @@
           </p>
         </a>
 
+                <a href="qa.html" class="card">
+          <div class="card-icon">❓</div>
+          <h3>Questions</h3>
+          <p>
+            Answer the questions below and read what your classmates shared .
+          </p>
+        </a>
+
+
         <a href="votes.html" class="card">
           <div class="card-icon">🏆</div>
           <h3>Votes</h3>
@@ -110,7 +120,7 @@
           </p>
         </a>
 
-        <a href="match.html" class="card">
+                        <a href="match.html" class="card">
           <div class="card-icon">🩺</div>
           <h3>Classmate Match</h3>
           <p>
@@ -118,22 +128,14 @@
           </p>
         </a>
 
+
+
+
       </div>
 
     </section>
 
-    <!-- Funny quote -->
-    <section class="section quote-section">
-      <div class="quote-card">
-        <p id="randomQuote">
-          High yield? My sleep schedule is low yield.
-        </p>
 
-        <button id="newQuoteBtn" class="link-btn">
-          Another one 😅
-        </button>
-      </div>
-    </section>
 
     <!-- Small info -->
     <section class="section info-section">
@@ -141,10 +143,7 @@
         <h3>Before you enter</h3>
 
         <ul>
-          <li>Use the same device if possible.</li>
-          <li>Do not clear browser data until we finish.</li>
           <li>Keep messages respectful.</li>
-          <li>Access may require a batch code.</li>
         </ul>
       </div>
     </section>
@@ -160,16 +159,15 @@
     </div>
   </footer>
 
-  <!-- First visit card will be injected here later -->
+  <!-- Gate Root -->
   <div id="gate-root"></div>
 
+  <!-- Scripts -->
   <script src="js/main.js"></script>
-
-  <div id="gate-root"></div>
-
-<link rel="stylesheet" href="css/gate.css" />
-<script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd/index-min.js"></script>
-<script src="js/gate.js"></script>
+  
+  <!-- CORRECT idb-keyval CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
+  <script src="js/gate.js"></script>
 
 </body>
 </html>

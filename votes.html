@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Votes - Before We Graduate</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/gate.css" />
+  <link rel="stylesheet" href="css/votes.css" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-badge">🩺</span>
+        <span>Before We Graduate</span>
+      </a>
+      <nav class="nav" id="siteNav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="send.html">Send Message</a>
+        <a href="messages.html">Messages</a>
+        <a href="qa.html">Q&A</a>
+        <a href="votes.html" class="active">Votes</a>
+        <a href="match.html">Classmate Match</a>
+      </nav>
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+    </div>
+  </header>
+
+  <main id="main" class="container votes-container">
+    
+    <!-- Header -->
+    <section class="votes-header">
+      <div class="votes-header-pill">🏆 Batch Superlatives</div>
+      <h1>Vote for your <span class="gold-text">batch legends.</span></h1>
+      <p class="votes-header-sub">
+        Pick 3 classmates for each question. Questions appear in random order. 
+        Your votes are anonymous and final.
+      </p>
+    </section>
+
+    <!-- Progress Bar -->
+    <div id="progressSection" class="progress-section" hidden>
+      <div class="progress-info">
+        <span class="progress-label">Your Progress</span>
+        <span class="progress-count" id="progressCount">0 / 25</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="state-card">
+      <div class="spinner"></div>
+      <p>Loading questions...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="state-card" hidden>
+      <div class="state-icon">📭</div>
+      <h3>No questions available</h3>
+      <p>Check back soon!</p>
+    </div>
+
+    <!-- All Done State -->
+    <div id="allDoneState" class="state-card" hidden>
+      <div class="state-icon">🎉</div>
+      <h3>You've voted on all questions!</h3>
+      <p>Thank you for participating. Results will be shared after graduation.</p>
+    </div>
+
+    <!-- Questions List -->
+    <div id="questionsList" class="questions-list" hidden></div>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>Made with caffeine, stress, and graduation dreams.</span>
+      <span class="footer-dot">•</span>
+      <span>Class memory project</span>
+    </div>
+  </footer>
+
+  <div id="gate-root"></div>
+  <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/gate.js"></script>
+  <script src="js/votes.js"></script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Classmate Match - Before We Graduate</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/gate.css" />
+  <link rel="stylesheet" href="css/match.css" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-badge">🩺</span>
+        <span>Before We Graduate</span>
+      </a>
+      <nav class="nav" id="siteNav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="send.html">Send Message</a>
+        <a href="messages.html">Messages</a>
+        <a href="qa.html">Q&A</a>
+        <a href="votes.html">Votes</a>
+        <a href="match.html" class="active">Classmate Match</a>
+      </nav>
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+    </div>
+  </header>
+
+  <main id="main" class="container match-container">
+    
+    <!-- Landing View -->
+    <section id="landingView" class="match-landing">
+      <div class="landing-hero">
+        <div class="landing-pill">🩺 Classmate Match</div>
+        <h1>Write a tribute for <span class="gold-text">your classmates.</span></h1>
+        <h2 class="landing-sub-title">And wait for your tribute from your classmates. 🤍</h2>
+        <p class="landing-sub">
+          Match each classmate with their future specialty, share a memory, 
+          and send them your advice. All tributes are anonymous and will be 
+          delivered privately after graduation.
+        </p>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-section">
+        <div class="progress-info">
+          <span class="progress-label">Tributes Written</span>
+          <span class="progress-count" id="progressCount">0 / 0</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Main Action -->
+      <button id="seeClassmatesBtn" class="btn btn-gold main-action-btn">
+        👥 See Classmates
+      </button>
+
+      <!-- Recent Tributes -->
+      <div id="recentSection" class="recent-section" hidden>
+        <h3 class="recent-title">Recently Written</h3>
+        <div id="recentList" class="recent-list"></div>
+      </div>
+    </section>
+
+    <!-- Tribute Form View -->
+    <section id="formView" class="match-form-view" hidden>
+      <button id="backToLandingBtn" class="back-btn">← Back to Classmates</button>
+      
+      <div class="form-header">
+        <div class="form-classmate-name" id="formClassmateName"></div>
+        <p class="form-sub">Write your tribute below. All fields except specialty are optional.</p>
+      </div>
+
+      <form id="tributeForm" class="tribute-form">
+        
+        <!-- Q1: Specialty (Required) -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-num">1</span>
+            What medical specialty matches them best? <span class="required">*</span>
+          </label>
+          <select id="specialtySelect" class="form-select" required>
+            <option value="">Select a specialty...</option>
+          </select>
+        </div>
+
+        <!-- Q2: How do you know them -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-num">2</span>
+            How do you know them?
+          </label>
+          <textarea id="howKnowInput" class="form-textarea" rows="3" maxlength="500" placeholder="e.g., We were in the same study group..."></textarea>
+          <div class="word-count"><span class="word-count-num">0</span> / 100 words</div>
+        </div>
+
+        <!-- Q3: Happy memory -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-num">3</span>
+            Do you have a happy memory with them?
+          </label>
+          <textarea id="happyMemoryInput" class="form-textarea" rows="3" maxlength="800" placeholder="e.g., That time we stayed until midnight studying..."></textarea>
+          <div class="word-count"><span class="word-count-num">0</span> / 150 words</div>
+        </div>
+
+        <!-- Q4: Good things -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-num">4</span>
+            What good things do you see in them?
+          </label>
+          <textarea id="goodThingsInput" class="form-textarea" rows="3" maxlength="800" placeholder="e.g., Always helpful, never judges..."></textarea>
+          <div class="word-count"><span class="word-count-num">0</span> / 150 words</div>
+        </div>
+
+        <!-- Q5: One word -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-num">5</span>
+            Describe them in ONE word <span class="required">*</span>
+          </label>
+          <input type="text" id="oneWordInput" class="form-input" maxlength="30" placeholder="e.g., Legend, Calm, Brilliant..." required />
+          <div class="word-count"><span class="word-count-num">0</span> / 1 word</div>
+        </div>
+
+        <!-- Q6: Advice -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-num">6</span>
+            What advice would you send them?
+          </label>
+          <textarea id="adviceInput" class="form-textarea" rows="3" maxlength="800" placeholder="e.g., Don't forget to rest..."></textarea>
+          <div class="word-count"><span class="word-count-num">0</span> / 150 words</div>
+        </div>
+
+        <!-- Q7: Signature phrase -->
+        <div class="form-group">
+          <label class="form-label">
+            <span class="label-num">7</span>
+            Their signature phrase or something they always say
+          </label>
+          <input type="text" id="signatureInput" class="form-input" maxlength="100" placeholder="e.g., High yield!, One last topic..." />
+          <div class="word-count"><span class="char-count-num">0</span> / 100 characters</div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-gold submit-btn" disabled>
+          Submit Tribute
+        </button>
+
+        <div id="formMessage" class="form-message" hidden></div>
+      </form>
+    </section>
+
+    <!-- Already Written View -->
+    <section id="viewTributeView" class="match-view-tribute" hidden>
+      <button id="backToLandingBtn2" class="back-btn">← Back to Classmates</button>
+      
+      <div class="tribute-header">
+        <div class="tribute-classmate-name" id="viewClassmateName"></div>
+        <p class="tribute-sub">Your tribute is safely stored and will be delivered privately🤍</p>
+      </div>
+
+    </section>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="state-card">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+  </main>
+
+  <!-- Classmates Modal -->
+  <div id="classmatesModal" class="modal-overlay">
+    <div class="modal-card classmates-modal-card">
+      <div class="modal-header">
+        <h3>Choose a Classmate</h3>
+        <button type="button" class="modal-close-btn" id="closeClassmatesModal">&times;</button>
+      </div>
+      
+      <div class="modal-search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="classmateSearch" class="modal-search-input" placeholder="Search by name..." />
+      </div>
+
+      <div class="modal-body" id="classmatesList">
+        <!-- Classmates injected here -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>Made with caffeine, stress, and graduation dreams.</span>
+      <span class="footer-dot">•</span>
+      <span>Class memory project</span>
+    </div>
+  </footer>
+
+  <div id="gate-root"></div>
+  <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/gate.js"></script>
+  <script src="js/match.js"></script>
+</body>
+</html>
