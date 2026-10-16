@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Before We Graduate</title>
+  <meta name="description" content="A graduation memory space for our batch." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- Decorative background -->
+  <div class="decor decor-1" aria-hidden="true"></div>
+  <div class="decor decor-2" aria-hidden="true"></div>
+  <div class="decor decor-3" aria-hidden="true"></div>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+
+      <a href="index.html" class="brand">
+        <span class="brand-badge">🩺</span>
+        <span>Before We Graduate</span>
+      </a>
+
+      <nav class="nav" id="siteNav" aria-label="Main navigation">
+        <a href="index.html" class="active">Home</a>
+        <a href="send.html">Send Message</a>
+        <a href="messages.html">Messages</a>
+        <a href="votes.html">Votes</a>
+        <a href="match.html">Classmate Match</a>
+      </nav>
+
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false">
+        ☰
+      </button>
+
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main id="main" class="container">
+
+    <!-- Hero -->
+    <section class="hero section">
+
+      <div class="hero-pill">
+        🎓 Almost doctors, fully chaotic
+      </div>
+
+      <h1>
+        We survived lectures, rounds, and
+        <span class="gold-text">8 AM exams</span>.
+      </h1>
+
+      <p class="hero-sub">
+        This is our little graduation corner. Leave messages, vote for batch legends,
+        and match your classmates with their future specialty.
+      </p>
+
+      <div class="hero-actions">
+        <a href="send.html" class="btn btn-gold">
+          Write a message
+        </a>
+
+        <a href="messages.html" class="btn btn-outline">
+          Read messages
+        </a>
+      </div>
+
+      <p class="hero-note">
+        Please keep it kind, funny, and respectful. Future doctors are watching. 👀
+      </p>
+
+    </section>
+
+    <!-- Feature cards -->
+    <section class="section">
+
+      <div class="section-head">
+        <h2>What can you do here?</h2>
+        <p>Simple, fun, and hopefully not embarrassing.</p>
+      </div>
+
+      <div class="cards-grid">
+
+        <a href="send.html" class="card">
+          <div class="card-icon">💌</div>
+          <h3>Send Message</h3>
+          <p>
+            Leave a memory, a thank-you note, or a message for the batch.
+          </p>
+        </a>
+
+        <a href="messages.html" class="card">
+          <div class="card-icon">📜</div>
+          <h3>See Messages</h3>
+          <p>
+            Read approved messages one by one and react to them.
+          </p>
+        </a>
+
+        <a href="votes.html" class="card">
+          <div class="card-icon">🏆</div>
+          <h3>Votes</h3>
+          <p>
+            Vote for batch superlatives. Who is most likely to become a surgeon?
+          </p>
+        </a>
+
+        <a href="match.html" class="card">
+          <div class="card-icon">🩺</div>
+          <h3>Classmate Match</h3>
+          <p>
+            Choose the specialty and character that match each classmate.
+          </p>
+        </a>
+
+      </div>
+
+    </section>
+
+    <!-- Funny quote -->
+    <section class="section quote-section">
+      <div class="quote-card">
+        <p id="randomQuote">
+          High yield? My sleep schedule is low yield.
+        </p>
+
+        <button id="newQuoteBtn" class="link-btn">
+          Another one 😅
+        </button>
+      </div>
+    </section>
+
+    <!-- Small info -->
+    <section class="section info-section">
+      <div class="info-card">
+        <h3>Before you enter</h3>
+
+        <ul>
+          <li>Use the same device if possible.</li>
+          <li>Do not clear browser data until we finish.</li>
+          <li>Keep messages respectful.</li>
+          <li>Access may require a batch code.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>Made with caffeine, stress, and graduation dreams.</span>
+      <span class="footer-dot">•</span>
+      <span>Class memory project</span>
+    </div>
+  </footer>
+
+  <!-- First visit card will be injected here later -->
+  <div id="gate-root"></div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
