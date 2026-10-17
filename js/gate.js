@@ -1,3 +1,5 @@
+// js/gate.js
+
 const GATE_API = "/api/gate";
 const SESSION_KEY = "gateSession";
 const VISITOR_KEY = "visitorId";
@@ -13,11 +15,14 @@ async function initGate() {
   const visitorId = await getVisitorId();
   const session = await idbKeyval.get(SESSION_KEY);
 
-  if (!session || !session.code || !session.codeId) {
-    renderGateCard(visitorId);
-  } else {
+  // ✅ AUTO-LOGIN: If session exists in IndexedDB, skip the gate
+  if (session && session.code && session.codeId) {
     renderProfileButton(session, visitorId);
+    return;
   }
+
+  // No session found - show the gate card
+  renderGateCard(visitorId);
 }
 
 async function getVisitorId() {
@@ -53,15 +58,39 @@ function renderGateCard(visitorId) {
     <div class="gate-overlay" role="dialog" aria-modal="true">
       <div class="gate-card">
         <div class="gate-badge">🎓 Batch Access</div>
-        <h2>Choose your group</h2>
-        <p class="gate-sub">Select your group to generate your access code.</p>
+        <h2>Welcome!</h2>
+        <p class="gate-sub">Choose your group to continue.</p>
 
         <div class="gate-group-buttons">
           <button class="gate-group-btn" data-group="malaysian">Malaysian</button>
           <button class="gate-group-btn" data-group="arab">Arab</button>
         </div>
 
+        <!-- Step 2: Two Options -->
         <div id="gateStep2" style="display: none;">
+          <p class="gate-sub" style="margin-top: 16px;">How would you like to enter?</p>
+          
+          <div class="gate-option-buttons">
+            <button id="generateNewBtn" class="gate-option-btn primary">
+              <span class="option-icon">🆕</span>
+              <span class="option-text">
+                <strong>Generate New Code</strong>
+                <small>I'm entering for the first time</small>
+              </span>
+            </button>
+            
+            <button id="existingCodeBtn" class="gate-option-btn secondary">
+              <span class="option-icon">🔑</span>
+              <span class="option-text">
+                <strong>I Have a Code</strong>
+                <small>Log in with my existing code</small>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3A: Generate New Code Flow -->
+        <div id="gateGenerateFlow" style="display: none;">
           <button id="generateCodeBtn" class="btn btn-gold gate-btn">
             Generate My Code
           </button>
@@ -72,6 +101,10 @@ function renderGateCard(visitorId) {
               <button id="copyCodeBtn" class="mini-btn secondary">Copy Code</button>
             </div>
 
+            <p class="gate-note" style="margin: 12px 0; color: #c0392b; font-weight: 600;">
+              ⚠️ Save this code! You'll need it to log in next time.
+            </p>
+
             <label class="gate-label">Confirm your code</label>
             <input id="gateCodeInput" class="gate-input" type="text" readonly />
 
@@ -79,6 +112,18 @@ function renderGateCard(visitorId) {
               Log In
             </button>
           </div>
+        </div>
+
+        <!-- Step 3B: Existing Code Flow -->
+        <div id="gateExistingFlow" style="display: none;">
+          <label class="gate-label">Enter your access code</label>
+          <input id="existingCodeInput" class="gate-input" type="text" 
+                 placeholder="GRAD-XXXX-XXXX" 
+                 style="text-transform: uppercase;" />
+          
+          <button id="verifyCodeBtn" class="btn btn-gold gate-btn">
+            Verify & Log In
+          </button>
         </div>
 
         <div id="gateError" class="gate-error" hidden></div>
@@ -92,18 +137,29 @@ function renderGateCard(visitorId) {
 
   const groupButtons = document.querySelectorAll(".gate-group-btn");
   const step2 = document.getElementById("gateStep2");
+  const generateFlow = document.getElementById("gateGenerateFlow");
+  const existingFlow = document.getElementById("gateExistingFlow");
+  
+  const generateNewBtn = document.getElementById("generateNewBtn");
+  const existingCodeBtn = document.getElementById("existingCodeBtn");
+  
   const generateBtn = document.getElementById("generateCodeBtn");
   const codeSection = document.getElementById("gateCodeSection");
   const generatedCodeEl = document.getElementById("generatedCode");
   const copyCodeBtn = document.getElementById("copyCodeBtn");
   const codeInput = document.getElementById("gateCodeInput");
   const activateBtn = document.getElementById("activateBtn");
+  
+  const existingCodeInput = document.getElementById("existingCodeInput");
+  const verifyCodeBtn = document.getElementById("verifyCodeBtn");
+  
   const errorBox = document.getElementById("gateError");
 
   let selectedGroup = null;
   let generatedCode = null;
   let generatedCodeId = null;
 
+  // Group Selection
   groupButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       groupButtons.forEach((b) => b.classList.remove("selected"));
@@ -114,6 +170,22 @@ function renderGateCard(visitorId) {
     });
   });
 
+  // Option A: Generate New Code
+  generateNewBtn.addEventListener("click", () => {
+    step2.style.display = "none";
+    generateFlow.style.display = "block";
+    hideError();
+  });
+
+  // Option B: Existing Code
+  existingCodeBtn.addEventListener("click", () => {
+    step2.style.display = "none";
+    existingFlow.style.display = "block";
+    existingCodeInput.focus();
+    hideError();
+  });
+
+  // Generate Code Action
   generateBtn.addEventListener("click", async () => {
     if (!selectedGroup) {
       showError("Please select a group first.");
@@ -170,6 +242,7 @@ function renderGateCard(visitorId) {
     }
   });
 
+  // Activate New Code
   activateBtn.addEventListener("click", async () => {
     if (!generatedCode) {
       showError("No code generated.");
@@ -215,6 +288,63 @@ function renderGateCard(visitorId) {
       showError("Connection error. Please try again.");
       activateBtn.disabled = false;
       activateBtn.textContent = "Log In";
+    }
+  });
+
+  // Verify Existing Code
+  verifyCodeBtn.addEventListener("click", async () => {
+    const code = existingCodeInput.value.trim().toUpperCase();
+    
+    if (!code) {
+      showError("Please enter your code.");
+      return;
+    }
+
+    if (!selectedGroup) {
+      showError("Please select a group first.");
+      return;
+    }
+
+    verifyCodeBtn.disabled = true;
+    verifyCodeBtn.textContent = "Verifying...";
+    hideError();
+
+    try {
+      const res = await fetch(GATE_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "verify-code",
+          code: code,
+          groupCode: selectedGroup,
+          visitorId,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        showError(data.error || "Invalid code.");
+        verifyCodeBtn.disabled = false;
+        verifyCodeBtn.textContent = "Verify & Log In";
+        return;
+      }
+
+      const session = {
+        code: data.code,
+        codeId: data.codeId,
+        groupCode: data.groupCode,
+        groupLabel: data.groupLabel || data.groupCode,
+        activatedAt: new Date().toISOString(),
+      };
+
+      await idbKeyval.set(SESSION_KEY, session);
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      showError("Connection error. Please try again.");
+      verifyCodeBtn.disabled = false;
+      verifyCodeBtn.textContent = "Verify & Log In";
     }
   });
 
