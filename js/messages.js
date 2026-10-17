@@ -10,6 +10,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const visitorId = await idbKeyval.get("visitorId");
   const groupCode = session.groupCode;
+  
+  // ✅ Ensure codeId is explicitly a string for safe comparison
+  const codeId = String(session.codeId); 
+  
+  console.log("🔍 Messages Debug: Current user codeId is:", codeId);
 
   // State variables
   let reactionCounts = {}; 
@@ -41,10 +46,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       // Fetch ALL reactions for these messages
-      const messageIds = messages.map((m) => m.id).join(",");
+      const messageIds = messages.map((m) => m.id);
       const { data: reactions, error: reactError } = await sb
         .from("reactions")
-        .select("message_id, reaction_type, visitor_id")
+        .select("message_id, reaction_type, owner_code_id")
         .in("message_id", messageIds);
 
       if (reactError) throw reactError;
@@ -61,8 +66,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
           reactionCounts[r.message_id][r.reaction_type]++;
           
-          // Check if this is the current user's reaction
-          if (r.visitor_id === visitorId) {
+          // ✅ TYPE-SAFE CHECK: Convert both to strings to prevent 95 === "95" failing
+          if (String(r.owner_code_id) === codeId) {
             userReactionTypes[r.message_id] = r.reaction_type;
           }
         });
@@ -174,18 +179,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // 3. Save to Supabase
     try {
-      const session = await idbKeyval.get("gateSession");
-      const visitorId = await idbKeyval.get("visitorId");
-
       const { error } = await sb.from("reactions").insert({
         message_id: messageId,
         visitor_id: visitorId,
         reaction_type: reactionType,
-        owner_code_id: session.codeId,
+        owner_code_id: codeId, // ✅ Using codeId
       });
 
       if (error) {
-        // If it's a unique constraint violation (already reacted), the UI is already correct.
         if (error.code === "23505") {
           console.log("Reaction already exists in database (prevented duplicate).");
         } else {
@@ -199,7 +200,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Helper to revert UI if something goes wrong
   async function revertReactionUI(btn, originalCount, messageId) {
     const reactionType = btn.dataset.type;
     const card = btn.closest(".message-card");
@@ -209,7 +209,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     btn.querySelector(".count").textContent = originalCount;
     card.querySelectorAll(".reaction-btn").forEach((b) => (b.disabled = false));
     
-    // Remove from IndexedDB
     const userReactions = (await idbKeyval.get("userReactions")) || {};
     delete userReactions[messageId];
     await idbKeyval.set("userReactions", userReactions);
