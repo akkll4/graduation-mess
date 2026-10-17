@@ -4,6 +4,7 @@ const VOTES_VOTED_KEY = "votesVotedQuestions";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const session = await idbKeyval.get("gateSession");
+  
   if (!session || !session.groupCode) {
     window.location.href = "index.html";
     return;
