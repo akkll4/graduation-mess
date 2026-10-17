@@ -12,30 +12,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const visitorId = await idbKeyval.get("visitorId");
   const groupCode = session.groupCode;
-  const codeId = session.codeId;
+  const codeId = session.codeId; // ✅ Correctly defined
 
   const loadingState = document.getElementById("loadingState");
   const emptyState = document.getElementById("emptyState");
   const questionsList = document.getElementById("questionsList");
 
-  // Modal Elements
   const repliesModal = document.getElementById("repliesModal");
   const modalQuestionText = document.getElementById("modalQuestionText");
   const modalRepliesList = document.getElementById("modalRepliesList");
   const closeModalBtn = document.getElementById("closeModalBtn");
 
-  // Modal Close Events
   if (closeModalBtn) {
-    closeModalBtn.addEventListener("click", closeModal);
+    closeModalBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeModal();
+    });
   }
 
   if (repliesModal) {
     repliesModal.addEventListener("click", (e) => {
-      if (e.target === repliesModal) {
-        closeModal();
-      }
+      if (e.target === repliesModal) closeModal();
     });
   }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && repliesModal.classList.contains("is-visible")) {
+      closeModal();
+    }
+  });
 
   await loadAllData();
 
@@ -67,6 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (aError) throw aError;
 
+      // ✅ Fetches based on codeId for cross-device sync
       const { data: myAnswers, error: myError } = await sb
         .from("qa_answers")
         .select("question_id")
@@ -105,7 +111,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const card = document.createElement("div");
     card.className = "question-card" + (hasAnswered ? " answered" : "");
     card.dataset.questionId = question.id;
-
     const answerCount = approvedAnswers.length;
 
     card.innerHTML = `
@@ -113,27 +118,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         <div class="question-number">Q${question.sort_order}</div>
         <div class="question-text">${escapeHtml(question.question_text)}</div>
       </div>
-
-      <div class="answer-count-badge">
-        💬 ${answerCount} ${answerCount === 1 ? "answer" : "answers"}
-      </div>
-
+      <div class="answer-count-badge">💬 ${answerCount} ${answerCount === 1 ? "answer" : "answers"}</div>
       <div class="question-actions">
-        <button 
-          class="qa-btn qa-btn-answer" 
-          data-action="answer"
-          ${hasAnswered ? "disabled" : ""}
-        >
+        <button class="qa-btn qa-btn-answer" data-action="answer" ${hasAnswered ? "disabled" : ""}>
           ${hasAnswered ? "✓ You Answered" : "✍️ Answer This"}
         </button>
-        <button 
-          class="qa-btn qa-btn-replies" 
-          data-action="replies"
-        >
-          👁️ Show Replies
-        </button>
+        <button class="qa-btn qa-btn-replies" data-action="replies">👁️ Show Replies</button>
       </div>
-
       <div class="answer-form-wrapper" data-section="answer-form">
         <form class="answer-form" data-question-id="${question.id}">
           <label>Your anonymous reply (max ${MAX_WORDS} words)</label>
@@ -154,15 +145,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const repliesBtn = card.querySelector('[data-action="replies"]');
 
     if (!hasAnswered) {
-      answerBtn.addEventListener("click", () => {
-        answerFormWrapper.classList.toggle("open");
-      });
+      answerBtn.addEventListener("click", () => answerFormWrapper.classList.toggle("open"));
     }
 
-    // 🌟 NEW: Open Modal for Replies
-    repliesBtn.addEventListener("click", () => {
-      openModal(question.question_text, approvedAnswers);
-    });
+    repliesBtn.addEventListener("click", () => openModal(question.question_text, approvedAnswers));
 
     const cancelBtn = card.querySelector('[data-action="cancel"]');
     cancelBtn.addEventListener("click", () => {
@@ -184,7 +170,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const words = text === "" ? 0 : text.split(/\s+/).length;
       wordCountNum.textContent = words;
       const wordCountEl = form.querySelector(".word-count");
-
       if (words > MAX_WORDS) {
         wordCountEl.classList.add("warning");
         submitBtn.disabled = true;
@@ -216,7 +201,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           question_id: question.id,
           content: text,
           group_code: groupCode,
-          owner_code_id: codeId,
+          owner_code_id: codeId, // ✅ Uses codeId
           owner_visitor_id: visitorId,
           status: "pending",
         });
@@ -251,11 +236,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     return card;
   }
 
-  // 🌟 Modal Functions
-  // 🌟 Modal Functions (Fixed)
   function openModal(questionText, answers) {
     modalQuestionText.textContent = questionText;
-    
     if (answers.length === 0) {
       modalRepliesList.innerHTML = `<div class="replies-empty">No replies yet. Be the first to answer!</div>`;
     } else {
@@ -266,39 +248,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         </div>
       `).join("");
     }
-    
     repliesModal.classList.add("is-visible");
     document.body.classList.add("modal-open");
   }
-
-  function closeModal() {
-    // Hide modal using class
-    repliesModal.classList.remove("is-visible");
-    document.body.classList.remove("modal-open");
-  }
-
-  // 🌟 Modal Event Listeners (Fixed)
-  if (closeModalBtn) {
-    closeModalBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      closeModal();
-    });
-  }
-
-  if (repliesModal) {
-    repliesModal.addEventListener("click", (e) => {
-      // Close if clicking the dark background overlay (not the card itself)
-      if (e.target === repliesModal) {
-        closeModal();
-      }
-    });
-  }
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && repliesModal.classList.contains("is-visible")) {
-      closeModal();
-    }
-  });
 
   function closeModal() {
     repliesModal.classList.remove("is-visible");
