@@ -1,3 +1,5 @@
+// api/gate.js
+
 function parseBody(req) {
   if (!req.body) return {};
   if (typeof req.body === "string") {
@@ -23,8 +25,9 @@ function normalizeCode(code) {
 }
 
 async function supabaseFetch(path, options = {}) {
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://myazzpalbiedwceqogjz.supabase.co";
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXp6cGFsYmllZHdjZXFvZ2p6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjEzMzM4NCwiZXhwIjoyMTA3NzA5Mzg0fQ.-p5RRzDhoEdXh-yK_B308PtN6-XdCYE4nLT2b5RP9AU";
+  const SUPABASE_URL = process.env.SUPABASE_URL || "https://myazzpalbiedwceqogjz.supabase.co";
+  const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15YXp6cGFsYmllZHdjZXFvZ2p6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjEzMzM4NCwiZXhwIjoyMTA3NzA5Mzg0fQ.-p5RRzDhoEdXh-yK_B308PtN6-XdCYE4nLT2b5RP9AU";
+  
   const url = `${SUPABASE_URL}/rest/v1/${path}`;
 
   const headers = {
@@ -78,13 +81,6 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ ok: false, error: "Method not allowed." });
   }
 
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-    return res.status(500).json({ ok: false, error: "Server not configured." });
-  }
-
   const ip = getClientIp(req);
   const userAgent = String(req.headers["user-agent"] || "");
   const body = parseBody(req);
@@ -94,7 +90,9 @@ module.exports = async function handler(req, res) {
   const visitorId = String(body.visitorId || "").trim();
 
   try {
+    // ==========================================
     // GENERATE CODE
+    // ==========================================
     if (action === "generate-code") {
       if (!groupCode || !["malaysian", "arab"].includes(groupCode)) {
         return res.status(400).json({ ok: false, error: "Invalid group." });
@@ -109,7 +107,6 @@ module.exports = async function handler(req, res) {
         details: `group=${groupCode}`,
       });
 
-      // Check group status
       const group = await supabaseFetch(
         `group_settings?select=*&group_code=eq.${groupCode}&limit=1`
       );
@@ -122,7 +119,6 @@ module.exports = async function handler(req, res) {
         return res.status(403).json({ ok: false, error: "This group is closed." });
       }
 
-      // Check if group is full
       const activeCodes = await supabaseFetch(
         `access_codes?select=id&group_code=eq.${groupCode}&status=eq.active`
       );
@@ -131,7 +127,6 @@ module.exports = async function handler(req, res) {
         return res.status(403).json({ ok: false, error: "This group is full." });
       }
 
-      // Get random unused code
       const unusedCodes = await supabaseFetch(
         `access_codes?select=*&group_code=eq.${groupCode}&status=eq.unused&limit=100`
       );
@@ -161,34 +156,20 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // ACTIVATE CODE
-    if (action === "activate") {
-      if (!code || !visitorId) {
-        return res.status(400).json({ ok: false, error: "Code and visitor ID required." });
+    // ==========================================
+    // VERIFY CODE (Multi-device friendly)
+    // ==========================================
+    if (action === "verify-code") {
+      if (!code || !groupCode || !visitorId) {
+        return res.status(400).json({ ok: false, error: "Code, group, and visitor ID required." });
       }
 
-      await logEvent({
-        code,
-        event: "activation_attempt",
-        visitor_id: visitorId,
-        ip,
-        user_agent: userAgent,
-      });
-
       const accessCode = await supabaseFetch(
-        `access_codes?select=*&code=eq.${encodeURIComponent(code)}&limit=1`
+        `access_codes?select=*&code=eq.${encodeURIComponent(code)}&group_code=eq.${groupCode}&limit=1`
       );
 
       if (!accessCode || !accessCode[0]) {
-        await logEvent({
-          code,
-          event: "activation_fail_invalid",
-          visitor_id: visitorId,
-          ip,
-          user_agent: userAgent,
-        });
-
-        return res.status(404).json({ ok: false, error: "Invalid access code." });
+        return res.status(404).json({ ok: false, error: "Code not found. Please check and try again." });
       }
 
       const codeData = accessCode[0];
@@ -207,20 +188,101 @@ module.exports = async function handler(req, res) {
 
       const now = new Date().toISOString();
 
-      // Activate unused code
+      // 1. Activate unused code
       if (codeData.status === "unused") {
-        if (group[0].closed) {
-          return res.status(403).json({ ok: false, error: "This group is closed." });
-        }
+        const updated = await supabaseFetch(`access_codes?id=eq.${codeData.id}`, {
+          method: "PATCH",
+          prefer: "return=representation",
+          body: {
+            status: "active",
+            assigned_visitor_id: visitorId, // Remember who activated it first
+            first_ip: ip,
+            last_ip: ip,
+            last_user_agent: userAgent,
+            activated_at: now,
+            last_seen_at: now,
+          },
+        });
 
-        const activeCodes = await supabaseFetch(
-          `access_codes?select=id&group_code=eq.${codeData.group_code}&status=eq.active`
-        );
+        await logEvent({
+          code_id: codeData.id,
+          code: codeData.code,
+          event: "activation_success",
+          visitor_id: visitorId,
+          ip,
+          user_agent: userAgent,
+          details: "verified_existing_code",
+        });
 
-        if (Array.isArray(activeCodes) && activeCodes.length >= group[0].max_entries) {
-          return res.status(403).json({ ok: false, error: "This group is full." });
-        }
+        return res.status(200).json({
+          ok: true,
+          code: updated[0].code,
+          codeId: updated[0].id,
+          groupCode: updated[0].group_code,
+          groupLabel: group[0].label,
+        });
+      }
 
+      // 2. Already active -> ALLOW MULTI-DEVICE (Just update last seen)
+      if (codeData.status === "active") {
+        const updated = await supabaseFetch(`access_codes?id=eq.${codeData.id}`, {
+          method: "PATCH",
+          prefer: "return=representation",
+          body: {
+            last_ip: ip,
+            last_user_agent: userAgent,
+            last_seen_at: now,
+          },
+        });
+
+        await logEvent({
+          code_id: codeData.id,
+          code: codeData.code,
+          event: "reentry_success",
+          visitor_id: visitorId,
+          ip,
+          user_agent: userAgent,
+          details: "multi_device_login",
+        });
+
+        return res.status(200).json({
+          ok: true,
+          code: updated[0].code,
+          codeId: updated[0].id,
+          groupCode: updated[0].group_code,
+          groupLabel: group[0].label,
+        });
+      }
+
+      return res.status(400).json({ ok: false, error: "This code is not available." });
+    }
+
+    // ==========================================
+    // ACTIVATE CODE (Multi-device friendly)
+    // ==========================================
+    if (action === "activate") {
+      if (!code || !visitorId) {
+        return res.status(400).json({ ok: false, error: "Code and visitor ID required." });
+      }
+
+      const accessCode = await supabaseFetch(
+        `access_codes?select=*&code=eq.${encodeURIComponent(code)}&limit=1`
+      );
+
+      if (!accessCode || !accessCode[0]) {
+        return res.status(404).json({ ok: false, error: "Invalid access code." });
+      }
+
+      const codeData = accessCode[0];
+
+      if (codeData.status === "blocked") {
+        return res.status(403).json({ ok: false, error: "This code is blocked." });
+      }
+
+      const now = new Date().toISOString();
+
+      // 1. Activate unused code
+      if (codeData.status === "unused") {
         const updated = await supabaseFetch(`access_codes?id=eq.${codeData.id}`, {
           method: "PATCH",
           prefer: "return=representation",
@@ -249,19 +311,12 @@ module.exports = async function handler(req, res) {
           code: updated[0].code,
           codeId: updated[0].id,
           groupCode: updated[0].group_code,
-          groupLabel: group[0].label,
+          groupLabel: "Group", // Fallback
         });
       }
 
-      // Already active
+      // 2. Already active -> ALLOW MULTI-DEVICE (Just update last seen)
       if (codeData.status === "active") {
-        if (codeData.assigned_visitor_id && codeData.assigned_visitor_id !== visitorId) {
-          return res.status(409).json({
-            ok: false,
-            error: "This code is already activated on another device.",
-          });
-        }
-
         const updated = await supabaseFetch(`access_codes?id=eq.${codeData.id}`, {
           method: "PATCH",
           prefer: "return=representation",
@@ -279,6 +334,7 @@ module.exports = async function handler(req, res) {
           visitor_id: visitorId,
           ip,
           user_agent: userAgent,
+          details: "multi_device_login",
         });
 
         return res.status(200).json({
@@ -286,14 +342,16 @@ module.exports = async function handler(req, res) {
           code: updated[0].code,
           codeId: updated[0].id,
           groupCode: updated[0].group_code,
-          groupLabel: group[0].label,
+          groupLabel: "Group", // Fallback
         });
       }
 
       return res.status(400).json({ ok: false, error: "This code is not available." });
     }
 
-    // PROFILE
+    // ==========================================
+    // PROFILE (Multi-device friendly)
+    // ==========================================
     if (action === "profile") {
       if (!code || !visitorId) {
         return res.status(400).json({ ok: false, error: "Code and visitor ID required." });
@@ -309,12 +367,8 @@ module.exports = async function handler(req, res) {
 
       const codeData = accessCode[0];
 
-      if (codeData.assigned_visitor_id && codeData.assigned_visitor_id !== visitorId) {
-        return res.status(409).json({
-          ok: false,
-          error: "This code is activated on another device.",
-        });
-      }
+      // ✅ REMOVED: The check that blocked different visitorIds. 
+      // Now it just updates last seen and lets them view their profile on any device.
 
       const now = new Date().toISOString();
 
@@ -328,7 +382,7 @@ module.exports = async function handler(req, res) {
       });
 
       const messages = await supabaseFetch(
-        `messages?select=id,content,sender_name,status,created_at&owner_code_id=eq.${codeData.id}&order=created_at.desc&limit=200`
+        `messages?select=id,content,status,created_at&owner_code_id=eq.${codeData.id}&order=created_at.desc&limit=200`
       );
 
       let reactionsByMessage = {};
@@ -336,7 +390,7 @@ module.exports = async function handler(req, res) {
       if (Array.isArray(messages) && messages.length > 0) {
         const messageIds = messages.map((m) => m.id).join(",");
         const reactions = await supabaseFetch(
-          `reactions?select=message_id,reaction&message_id=in.(${messageIds})`
+          `reactions?select=message_id,reaction_type&message_id=in.(${messageIds})`
         );
 
         if (Array.isArray(reactions)) {
@@ -344,8 +398,8 @@ module.exports = async function handler(req, res) {
             if (!reactionsByMessage[reaction.message_id]) {
               reactionsByMessage[reaction.message_id] = {};
             }
-            reactionsByMessage[reaction.message_id][reaction.reaction] =
-              (reactionsByMessage[reaction.message_id][reaction.reaction] || 0) + 1;
+            reactionsByMessage[reaction.message_id][reaction.reaction_type] =
+              (reactionsByMessage[reaction.message_id][reaction.reaction_type] || 0) + 1;
           }
         }
       }
@@ -369,6 +423,6 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ ok: false, error: "Unknown action." });
   } catch (error) {
     console.error("Gate API error:", error);
-    return res.status(500).json({ ok: false, error: "Server error." });
+    return res.status(500).json({ ok: false, error: "Server error: " + error.message });
   }
 };
